@@ -45,21 +45,20 @@ compose.desktop {
             packageVersion = "1.0.0"
 
             description = "Instalador de modpacks .mrpack para Minecraft"
-            vendor = "Crawkatt"
+            vendor = "CrawKatt"
 
             linux {
                 iconFile.set(project.file("src/jvmMain/resources/icon.png"))
             }
-            /*
             windows {
+                menu = true
+                menuGroup = "CrawKatt"
                 iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
             }
-            */
         }
     }
 }
 
-// Tarea para crear FAT JAR universal
 tasks.register<Jar>("fatJar") {
     group = "build"
     description = "Crea un JAR ejecutable con todas las dependencias incluidas"
@@ -78,17 +77,14 @@ tasks.register<Jar>("fatJar") {
         )
     }
 
-    // Incluir todas las dependencias
     from(configurations.getByName("jvmRuntimeClasspath").map {
         if (it.isDirectory) it else zipTree(it)
     })
 
-    // Incluir el código compilado
     from(kotlin.jvm().compilations.getByName("main").output.classesDirs)
     from(kotlin.jvm().compilations.getByName("main").output.resourcesDir)
 }
 
-// Alias más simple
 tasks.register("buildJar") {
     group = "build"
     description = "Alias para fatJar"
