@@ -38,6 +38,9 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "org.crawkatt.mrpackinstaller.MainKt"
+        buildTypes.release.proguard {
+            isEnabled.set(false)
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
@@ -54,6 +57,7 @@ compose.desktop {
                 menu = true
                 menuGroup = "CrawKatt"
                 iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
+                upgradeUuid = "d39cb164-6294-4440-86e2-bb5736bfad3d"
             }
         }
     }
