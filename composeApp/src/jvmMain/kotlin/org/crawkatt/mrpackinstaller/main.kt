@@ -6,6 +6,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import com.formdev.flatlaf.FlatDarkLaf
+import org.crawkatt.mrpackinstaller.ui.ModpackInstallerScreen
 
 fun main() = application {
     FlatDarkLaf.setup()
@@ -14,6 +15,6 @@ fun main() = application {
         title = "Mrpack Installer",
         state = WindowState(size = DpSize(1200.dp, 800.dp))
     ) {
-        ModpackInstallerApp()
+        ModpackInstallerScreen()
     }
 }
