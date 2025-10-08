@@ -111,32 +111,33 @@ class App {
         }
     }
 
-    private fun loadModpackInfo() {
-        selectedMrpackFile?.let { file ->
-            try {
-                ZipInputStream(FileInputStream(file)).use { zis ->
-                    var entry = zis.nextEntry
-                    while (entry != null) {
-                        if (entry.name == "modrinth.index.json") {
-                            val baos = ByteArrayOutputStream()
-                            val buffer = ByteArray(1024)
-                            var len = zis.read(buffer)
-                            while (len > 0) {
-                                baos.write(buffer, 0, len)
-                                len = zis.read(buffer)
-                            }
+    private fun loadModpackInfo(): Result<ModpackInfo> {
+        val file = selectedMrpackFile ?: return Result.failure(IllegalStateException("No hay archivo seleccionado"))
 
-                            val root = objectMapper.readTree(baos.toByteArray())
-                            modpackIndex = root
-                            modpackInfo = parseModpackInfo(root)
-                            break
+        return runCatching {
+            ZipInputStream(FileInputStream(file)).use { zis ->
+                var entry = zis.nextEntry
+                while (entry != null) {
+                    if (entry.name == "modrinth.index.json") {
+                        val baos = ByteArrayOutputStream()
+                        val buffer = ByteArray(1024)
+                        var len = zis.read(buffer)
+                        while (len > 0) {
+                            baos.write(buffer, 0, len)
+                            len = zis.read(buffer)
                         }
-                        entry = zis.nextEntry
+
+                        val root = objectMapper.readTree(baos.toByteArray())
+                        modpackIndex = root
+
+                        val info = parseModpackInfo(root)
+                        modpackInfo = info
+                        return@runCatching info
                     }
+                    entry = zis.nextEntry
                 }
-            } catch (e: IOException) {
-                statusMessage = "❌ Error al leer el archivo .mrpack: ${e.message}"
             }
+            throw IOException("No se encontró modrinth.index.json en el .mrpack")
         }
     }
 
@@ -167,21 +168,25 @@ class App {
                 loaderVersion = forge.asText()
                 loaderDisplay = "Forge: $loaderVersion"
             }
+
             !neoforge.isMissingNode -> {
                 loaderType = LoaderType.NEOFORGE
                 loaderVersion = neoforge.asText()
                 loaderDisplay = "NeoForge: $loaderVersion"
             }
+
             !fabric.isMissingNode -> {
                 loaderType = LoaderType.FABRIC
                 loaderVersion = fabric.asText()
                 loaderDisplay = "Fabric: $loaderVersion"
             }
+
             !quilt.isMissingNode -> {
                 loaderType = LoaderType.QUILT
                 loaderVersion = quilt.asText()
                 loaderDisplay = "Quilt: $loaderVersion"
             }
+
             else -> {
                 loaderType = LoaderType.NONE
                 loaderVersion = ""
@@ -203,29 +208,26 @@ class App {
     }
 
     suspend fun installModpack(): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            isInstalling = true
-            installProgress = 0f
-            statusMessage = "🔄 Preparando instalación..."
+        isInstalling = true
+        installProgress = 0f
+        statusMessage = "🔄 Preparando instalación..."
 
-            // Instalar el loader primero
+        runCatching {
             installLoader()
-
-            // Limpiar carpeta de mods
             cleanModsFolder()
-
             extractIncludedFiles()
             downloadAndInstallMods()
-
-            statusMessage = "✅ ¡Modpack instalado correctamente!"
-            Result.success(Unit)
-        } catch (e: Exception) {
-            statusMessage = "❌ Error durante la instalación: ${e.message}"
-            e.printStackTrace()
-            Result.failure(e)
-        } finally {
-            isInstalling = false
         }
+            .onSuccess {
+                statusMessage = "✅ ¡Modpack instalado correctamente!"
+            }
+            .onFailure { e ->
+                statusMessage = "❌ Error durante la instalación: ${e.message}"
+                e.printStackTrace()
+            }
+            .also {
+                isInstalling = false
+            }
     }
 
     private fun installLoader() {
@@ -240,183 +242,97 @@ class App {
 
         when (info.loaderType) {
             LoaderType.FORGE -> installForge(info.minecraftVersion, info.loaderVersion)
-            LoaderType.NEOFORGE -> installNeoForge(info.minecraftVersion, info.loaderVersion)
+            LoaderType.NEOFORGE -> installNeoForge(info.loaderVersion)
             LoaderType.FABRIC -> installFabric(info.minecraftVersion, info.loaderVersion)
             LoaderType.QUILT -> installQuilt(info.minecraftVersion, info.loaderVersion)
-            LoaderType.NONE -> {}
+            else -> {}
         }
     }
 
     private fun installForge(mcVersion: String, forgeVersion: String) {
-        val tempDir = Files.createTempDirectory("forge_installer")
-        val installerFile = tempDir.resolve("forge-installer.jar")
-
-        try {
-            // Descargar el instalador de Forge
-            val forgeUrl = "https://maven.minecraftforge.net/net/minecraftforge/forge/$mcVersion-$forgeVersion/forge-$mcVersion-$forgeVersion-installer.jar"
-            statusMessage = "🔄 Descargando instalador de Forge..."
-            downloadFile(forgeUrl, installerFile)
-
-            // Ejecutar el instalador
-            statusMessage = "🔄 Ejecutando instalador de Forge..."
-            val process = ProcessBuilder(
-                "java", "-jar", installerFile.toString(),
-                "--installClient", minecraftPath.toString()
-            ).redirectErrorStream(true).start()
-
-            // Leer la salida del proceso
-            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-                reader.lineSequence().forEach { line ->
-                    println("Forge: $line")
-                }
-            }
-
-            val exitCode = process.waitFor()
-            if (exitCode != 0) {
-                throw IOException("El instalador de Forge falló con código: $exitCode")
-            }
-
-            statusMessage = "✅ Forge instalado correctamente"
-        } finally {
-            // Limpiar archivos temporales
-            Files.walk(tempDir).sorted(Comparator.reverseOrder()).forEach { Files.deleteIfExists(it) }
+        installWithInstaller(
+            "Forge",
+            "https://maven.minecraftforge.net/net/minecraftforge/forge/$mcVersion-$forgeVersion/forge-$mcVersion-$forgeVersion-installer.jar"
+        ) {
+            listOf("--installClient", it.toString())
         }
     }
 
-    private fun installNeoForge(mcVersion: String, neoforgeVersion: String) {
-        val tempDir = Files.createTempDirectory("neoforge_installer")
-        val installerFile = tempDir.resolve("neoforge-installer.jar")
-
-        try {
-            // Descargar el instalador de NeoForge
-            val neoforgeUrl = "https://maven.neoforged.net/releases/net/neoforged/neoforge/$neoforgeVersion/neoforge-$neoforgeVersion-installer.jar"
-            statusMessage = "🔄 Descargando instalador de NeoForge..."
-            downloadFile(neoforgeUrl, installerFile)
-
-            // Ejecutar el instalador
-            statusMessage = "🔄 Ejecutando instalador de NeoForge..."
-            val process = ProcessBuilder(
-                "java", "-jar", installerFile.toString(),
-                "--installClient", minecraftPath.toString()
-            ).redirectErrorStream(true).start()
-
-            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-                reader.lineSequence().forEach { line ->
-                    println("NeoForge: $line")
-                }
-            }
-
-            val exitCode = process.waitFor()
-            if (exitCode != 0) {
-                throw IOException("El instalador de NeoForge falló con código: $exitCode")
-            }
-
-            statusMessage = "✅ NeoForge instalado correctamente"
-        } finally {
-            Files.walk(tempDir).sorted(Comparator.reverseOrder()).forEach { Files.deleteIfExists(it) }
+    private fun installNeoForge(neoforgeVersion: String) {
+        installWithInstaller(
+            "NeoForge",
+            "https://maven.neoforged.net/releases/net/neoforged/neoforge/$neoforgeVersion/neoforge-$neoforgeVersion-installer.jar"
+        ) {
+            listOf("--installClient", it.toString())
         }
     }
 
-    private fun installFabric(mcVersion: String, fabricVersion: String) {
-        val tempDir = Files.createTempDirectory("fabric_installer")
-        val installerFile = tempDir.resolve("fabric-installer.jar")
+    private fun installFabric(mcVersion: String, fabricVersion: String): Result<Unit> {
+        val url = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.1/fabric-installer-1.0.1.jar"
+        val launcherDir = minecraftPath?.parent ?: minecraftPath!!
 
-        try {
-            // Descargar el instalador de Fabric (última versión estable)
-            val fabricUrl = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.1/fabric-installer-1.0.1.jar"
-            statusMessage = "🔄 Descargando instalador de Fabric..."
-            downloadFile(fabricUrl, installerFile)
+        fun args(dir: Path) = listOf(
+            "client",
+            "-mcversion", mcVersion,
+            "-loader", fabricVersion,
+            "-dir", dir.toString()
+        )
 
-            // Obtener el directorio padre de .minecraft (donde está el launcher_profiles.json)
-            val launcherDir = minecraftPath!!.parent ?: minecraftPath!!
-
-            // Ejecutar el instalador
-            statusMessage = "🔄 Ejecutando instalador de Fabric..."
-
-            // Intentar primero con el directorio del launcher
-            var process = ProcessBuilder(
-                "java", "-jar", installerFile.toString(),
-                "client",
-                "-mcversion", mcVersion,
-                "-loader", fabricVersion,
-                "-dir", launcherDir.toString()
-            ).redirectErrorStream(true).start()
-
-            val output = StringBuilder()
-            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-                reader.lineSequence().forEach { line ->
-                    println("Fabric: $line")
-                    output.appendLine(line)
-                }
-            }
-
-            var exitCode = process.waitFor()
-
-            // Si falló, intentar con el directorio .minecraft directamente
-            if (exitCode != 0) {
+        return installWithInstaller("Fabric", url) { args(launcherDir) }
+            .recoverCatching {
                 println("Primer intento falló, probando con directorio .minecraft...")
-                process = ProcessBuilder(
-                    "java", "-jar", installerFile.toString(),
-                    "client",
-                    "-mcversion", mcVersion,
-                    "-loader", fabricVersion,
-                    "-dir", minecraftPath.toString()
-                ).redirectErrorStream(true).start()
-
-                output.clear()
-                BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-                    reader.lineSequence().forEach { line ->
-                        println("Fabric: $line")
-                        output.appendLine(line)
-                    }
-                }
-
-                exitCode = process.waitFor()
+                installWithInstaller("Fabric", url) { args(minecraftPath!!) }.getOrThrow()
             }
-
-            if (exitCode != 0) {
-                throw IOException("El instalador de Fabric falló con código: $exitCode\n${output.toString()}")
-            }
-
-            statusMessage = "✅ Fabric instalado correctamente"
-        } finally {
-            Files.walk(tempDir).sorted(Comparator.reverseOrder()).forEach { Files.deleteIfExists(it) }
-        }
     }
 
     private fun installQuilt(mcVersion: String, quiltVersion: String) {
-        val tempDir = Files.createTempDirectory("quilt_installer")
-        val installerFile = tempDir.resolve("quilt-installer.jar")
-
-        try {
-            // Descargar el instalador de Quilt
-            val quiltUrl = "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/0.9.1/quilt-installer-0.9.1.jar"
-            statusMessage = "🔄 Descargando instalador de Quilt..."
-            downloadFile(quiltUrl, installerFile)
-
-            // Ejecutar el instalador
-            statusMessage = "🔄 Ejecutando instalador de Quilt..."
-            val process = ProcessBuilder(
-                "java", "-jar", installerFile.toString(),
+        installWithInstaller(
+            "Quilt",
+            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/0.9.1/quilt-installer-0.9.1.jar"
+        ) {
+            listOf(
                 "install", "client", mcVersion, quiltVersion,
-                "--install-dir=" + minecraftPath.toString(),
+                "--install-dir=$minecraftPath",
                 "--no-profile"
+            )
+        }
+    }
+
+    private fun installWithInstaller(
+        name: String,
+        url: String,
+        argsProvider: (Path) -> List<String>
+    ): Result<Unit> {
+        val tempDir = Files.createTempDirectory("${name.lowercase()}_installer")
+        val installerFile = tempDir.resolve("$name-installer.jar")
+
+        return runCatching {
+            statusMessage = "🔄 Descargando instalador de $name..."
+            downloadFile(url, installerFile)
+
+            statusMessage = "🔄 Ejecutando instalador de $name..."
+            val process = ProcessBuilder(
+                listOf("java", "-jar", installerFile.toString()) + argsProvider(minecraftPath!!)
             ).redirectErrorStream(true).start()
 
             BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
                 reader.lineSequence().forEach { line ->
-                    println("Quilt: $line")
+                    println("$name: $line")
                 }
             }
 
             val exitCode = process.waitFor()
             if (exitCode != 0) {
-                throw IOException("El instalador de Quilt falló con código: $exitCode")
+                throw IOException("El instalador de $name falló con código: $exitCode")
             }
 
-            statusMessage = "✅ Quilt instalado correctamente"
-        } finally {
-            Files.walk(tempDir).sorted(Comparator.reverseOrder()).forEach { Files.deleteIfExists(it) }
+            statusMessage = "✅ $name instalado correctamente"
+        }.onFailure { e ->
+            statusMessage = "❌ Error instalando $name: ${e.message}"
+        }.also {
+            Files.walk(tempDir)
+                .sorted(Comparator.reverseOrder())
+                .forEach { Files.deleteIfExists(it) }
         }
     }
 
@@ -553,14 +469,14 @@ class App {
             }
         }
 
-        if (!verifyFileHash(targetPath, modFile.sha1)) {
+        if (verifyFileHash(targetPath, modFile.sha1).isFailure) {
             Files.deleteIfExists(targetPath)
             throw IOException("Hash incorrecto para el archivo: ${modFile.path}")
         }
     }
 
-    private fun verifyFileHash(filePath: Path, expectedSha1: String): Boolean {
-        return try {
+    private fun verifyFileHash(filePath: Path, expectedSha1: String): Result<Boolean> {
+        return runCatching {
             val digest = MessageDigest.getInstance("SHA-1")
             Files.newInputStream(filePath).use { fis ->
                 val buffer = ByteArray(8192)
@@ -578,8 +494,6 @@ class App {
             }
 
             sb.toString() == expectedSha1
-        } catch (_: Exception) {
-            false
         }
     }
 
@@ -808,14 +722,5 @@ fun InfoRow(label: String, value: String) {
             modifier = Modifier.width(180.dp)
         )
         Text(text = value)
-    }
-}
-
-fun main() = application {
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "Instalador de Modpacks .mrpack"
-    ) {
-        ModpackInstallerApp()
     }
 }

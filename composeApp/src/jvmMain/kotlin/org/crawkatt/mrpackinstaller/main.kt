@@ -11,7 +11,7 @@ fun main() = application {
     FlatDarkLaf.setup()
     Window(
         onCloseRequest = ::exitApplication,
-        title = "KotlinProject",
+        title = "Mrpack Installer",
         state = WindowState(size = DpSize(1200.dp, 800.dp))
     ) {
         ModpackInstallerApp()
