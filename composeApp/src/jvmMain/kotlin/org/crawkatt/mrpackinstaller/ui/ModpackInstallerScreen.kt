@@ -9,6 +9,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.crawkatt.mrpackinstaller.data.InstallMode
 import org.crawkatt.mrpackinstaller.ui.components.*
 import org.crawkatt.mrpackinstaller.ui.theme.MrpackInstallerTheme
 
@@ -26,13 +27,32 @@ fun ModpackInstallerScreen() {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 AppHeader()
-                FileSelectionCard(
-                    title = "Archivo .mrpack",
-                    filePath = viewModel.selectedMrpackFile?.absolutePath ?: "",
-                    placeholder = "Selecciona un archivo...",
-                    onBrowseClick = { viewModel.selectMrpackFile() },
+
+
+                InstallModeSelector(
+                    selectedMode = viewModel.installMode,
+                    onModeChange = { viewModel.switchInstallMode(it) },
                     enabled = !viewModel.isInstalling
                 )
+
+                when (viewModel.installMode) {
+                    InstallMode.API_DOWNLOAD -> {
+                        ApiModpackCard(
+                            apiResponse = viewModel.apiResponse,
+                            isLoading = viewModel.isLoadingModpackInfo,
+                            onRefreshClick = { viewModel.loadModpackInfo() }
+                        )
+                    }
+                    InstallMode.LOCAL_FILE -> {
+                        FileSelectionCard(
+                            title = "Archivo .mrpack",
+                            filePath = viewModel.selectedMrpackFile?.absolutePath ?: "",
+                            placeholder = "Selecciona un archivo...",
+                            onBrowseClick = { viewModel.selectMrpackFile() },
+                            enabled = !viewModel.isInstalling
+                        )
+                    }
+                }
 
                 viewModel.modpackInfo?.let { info ->
                     ModpackInfoCard(
