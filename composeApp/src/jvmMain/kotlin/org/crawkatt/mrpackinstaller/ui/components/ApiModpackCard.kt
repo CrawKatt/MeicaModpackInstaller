@@ -114,13 +114,13 @@ private fun ModpackView(apiResponse: ApiResponse) {
                 )
 
                 Text(
-                    text = "v${apiResponse.modpackInfo.version_id} • Minecraft ${apiResponse.modpackInfo.minecraft_version}",
+                    text = "v${apiResponse.modpackInfo.versionId} • Minecraft ${apiResponse.modpackInfo.minecraftVersion}",
                     style = MaterialTheme.typography.body2,
                     color = Color.Gray
                 )
 
                 Text(
-                    text = "${apiResponse.modpackInfo.loader} ${apiResponse.modpackInfo.loader_version} • ${apiResponse.modpackInfo.mod_count} mods",
+                    text = "${apiResponse.modpackInfo.loader} ${apiResponse.modpackInfo.loaderVersion} • ${apiResponse.modpackInfo.modCount} mods",
                     style = MaterialTheme.typography.body2,
                     color = Color.Gray
                 )

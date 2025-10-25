@@ -22,29 +22,29 @@ data class ModpackInfo(
 )
 
 data class ApiResponse(
-    @JsonProperty("available") val available: Boolean,
-    @JsonProperty("file_name") val fileName: String,
-    @JsonProperty("file_size") val fileSize: Long,
-    @JsonProperty("file_size_mb") val fileSizeMb: Double,
-    @JsonProperty("modpack_info") val modpackInfo: ApiModpackInfo
+    @param:JsonProperty("available") val available: Boolean,
+    @param:JsonProperty("file_name") val fileName: String,
+    @param:JsonProperty("file_size") val fileSize: Long,
+    @param:JsonProperty("file_size_mb") val fileSizeMb: Double,
+    @param:JsonProperty("modpack_info") val modpackInfo: ApiModpackInfo
 )
 
 data class ApiModpackInfo(
-    @JsonProperty("name") val name: String,
-    @JsonProperty("summary") val summary: String,
-    @JsonProperty("version_id") val version_id: String,
-    @JsonProperty("format_version") val format_version: Int,
-    @JsonProperty("minecraft_version") val minecraft_version: String,
-    @JsonProperty("loader") val loader: String,
-    @JsonProperty("loader_version") val loader_version: String,
-    @JsonProperty("mod_count") val mod_count: Int,
-    @JsonProperty("mods") val mods: List<ApiMod>
+    @param:JsonProperty("name") val name: String,
+    @param:JsonProperty("summary") val summary: String,
+    @param:JsonProperty("version_id") val versionId: String,
+    @param:JsonProperty("format_version") val formatVersion: Int,
+    @param:JsonProperty("minecraft_version") val minecraftVersion: String,
+    @param:JsonProperty("loader") val loader: String,
+    @param:JsonProperty("loader_version") val loaderVersion: String,
+    @param:JsonProperty("mod_count") val modCount: Int,
+    @param:JsonProperty("mods") val mods: List<ApiMod>
 )
 
 data class ApiMod(
-    @JsonProperty("name") val name: String,
-    @JsonProperty("file_size") val file_size: Long,
-    @JsonProperty("environment") val environment: String
+    @param:JsonProperty("name") val name: String,
+    @param:JsonProperty("file_size") val fileSize: Long,
+    @param:JsonProperty("environment") val environment: String
 )
 
 data class ApiModpack(

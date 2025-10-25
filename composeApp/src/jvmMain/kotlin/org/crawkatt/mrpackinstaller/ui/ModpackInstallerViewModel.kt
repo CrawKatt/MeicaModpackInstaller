@@ -71,13 +71,13 @@ class ModpackInstallerViewModel {
                     if (response.available) {
                         val newModpackInfo = ModpackInfo(
                             name = response.modpackInfo.name,
-                            version = response.modpackInfo.version_id,
+                            version = response.modpackInfo.versionId,
                             summary = response.modpackInfo.summary,
-                            minecraftVersion = response.modpackInfo.minecraft_version,
-                            loader = "${response.modpackInfo.loader} ${response.modpackInfo.loader_version}",
-                            loaderVersion = response.modpackInfo.loader_version,
+                            minecraftVersion = response.modpackInfo.minecraftVersion,
+                            loader = "${response.modpackInfo.loader} ${response.modpackInfo.loaderVersion}",
+                            loaderVersion = response.modpackInfo.loaderVersion,
                             loaderType = determineLoaderType(response.modpackInfo.loader),
-                            modCount = response.modpackInfo.mod_count,
+                            modCount = response.modpackInfo.modCount,
                             totalSize = response.fileSize
                         )
                         println("✅ ModpackInfo creado: ${newModpackInfo.name}")
