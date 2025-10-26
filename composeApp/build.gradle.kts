@@ -60,7 +60,7 @@ compose.desktop {
             vendor = "CrawKatt"
 
             linux {
-                iconFile.set(project.file("src/jvmMain/resources/icon.png"))
+                iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
             }
             windows {
                 menu = true
