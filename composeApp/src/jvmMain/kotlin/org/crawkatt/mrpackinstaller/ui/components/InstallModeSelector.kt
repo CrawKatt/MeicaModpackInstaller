@@ -38,7 +38,6 @@ fun InstallModeSelector(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 InstallModeOption(
-                    mode = InstallMode.API_DOWNLOAD,
                     selected = selectedMode == InstallMode.API_DOWNLOAD,
                     onClick = { onModeChange(InstallMode.API_DOWNLOAD) },
                     enabled = enabled,
@@ -49,7 +48,6 @@ fun InstallModeSelector(
                 )
 
                 InstallModeOption(
-                    mode = InstallMode.LOCAL_FILE,
                     selected = selectedMode == InstallMode.LOCAL_FILE,
                     onClick = { onModeChange(InstallMode.LOCAL_FILE) },
                     enabled = enabled,
@@ -65,7 +63,6 @@ fun InstallModeSelector(
 
 @Composable
 private fun InstallModeOption(
-    mode: InstallMode,
     selected: Boolean,
     onClick: () -> Unit,
     enabled: Boolean,
