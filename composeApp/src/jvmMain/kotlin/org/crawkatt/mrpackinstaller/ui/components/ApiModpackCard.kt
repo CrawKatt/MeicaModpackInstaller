@@ -1,5 +1,6 @@
 package org.crawkatt.mrpackinstaller.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -90,7 +91,7 @@ private fun ModpackView(apiResponse: ApiResponse) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.1f),
-        border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colors.primary),
+        border = BorderStroke(2.dp, MaterialTheme.colors.primary),
         elevation = 4.dp,
         shape = RoundedCornerShape(6.dp)
     ) {

@@ -1,5 +1,6 @@
 package org.crawkatt.mrpackinstaller.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -84,7 +85,7 @@ private fun InstallModeOption(
             MaterialTheme.colors.surface
         },
         border = if (selected) {
-            androidx.compose.foundation.BorderStroke(
+            BorderStroke(
                 2.dp, 
                 MaterialTheme.colors.primary
             )
