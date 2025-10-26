@@ -69,7 +69,7 @@ class ModpackInstallerViewModel {
                     println("✅ API Response recibida: ${response.available}")
                     apiResponse = response
                     if (response.available) {
-                        val newModpackInfo = ModpackInfo(
+                        modpackInfo = ModpackInfo(
                             name = response.modpackInfo.name,
                             version = response.modpackInfo.versionId,
                             summary = response.modpackInfo.summary,
@@ -80,8 +80,7 @@ class ModpackInstallerViewModel {
                             modCount = response.modpackInfo.modCount,
                             totalSize = response.fileSize
                         )
-                        println("✅ ModpackInfo creado: ${newModpackInfo.name}")
-                        modpackInfo = newModpackInfo
+                        println("✅ ModpackInfo creado: ${modpackInfo?.name}")
                         statusMessage = "Modpack disponible: ${response.modpackInfo.name}"
                         println("✅ Estado actualizado - modpackInfo: ${modpackInfo?.name}")
                     } else {
