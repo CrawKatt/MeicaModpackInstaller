@@ -1,6 +1,7 @@
 package org.crawkatt.mrpackinstaller.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.crawkatt.mrpackinstaller.config.AppConfig
 import org.crawkatt.mrpackinstaller.data.ApiResponse
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -10,7 +11,7 @@ import kotlin.jvm.java
 
 class ApiService {
     private val objectMapper = ObjectMapper()
-    private val baseUrl = "http://localhost:3000/api"
+    private val baseUrl: String = AppConfig.apiBaseUrl
 
     companion object {
         private const val USER_AGENT = "MrpackInstaller/1.0"
