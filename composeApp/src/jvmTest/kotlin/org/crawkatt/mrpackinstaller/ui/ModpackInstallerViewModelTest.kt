@@ -35,7 +35,7 @@ class ModpackInstallerViewModelTest {
         assertNull(viewModel.modpackIndex)
         assertFalse(viewModel.isInstalling)
         assertEquals(0f, viewModel.installProgress)
-        assertEquals("", viewModel.statusMessage)
+        assertEquals("Cargando información del modpack...", viewModel.statusMessage)
     }
 
     @Test
@@ -101,7 +101,7 @@ class ModpackInstallerViewModelTest {
 
     @Test
     fun updateStatusMessagesTest() {
-        assertEquals("", viewModel.statusMessage)
+        assertEquals("Cargando información del modpack...", viewModel.statusMessage)
 
         viewModel.statusMessage = "🔄 Loading modpack..."
         assertEquals("🔄 Loading modpack...", viewModel.statusMessage)
