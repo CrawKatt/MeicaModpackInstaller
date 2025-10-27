@@ -2,4 +2,4 @@
 
 source $1
 
-echo "$versionMajor.versionMinor.versionPatch"
+echo "$versionMajor.$versionMinor.$versionPatch"
