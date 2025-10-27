@@ -23,6 +23,8 @@ class ModpackInstallerViewModel {
     private val downloadService = DownloadService()
     private val loaderInstallerService = LoaderInstallerService()
     private val apiService = ApiService()
+    private val launcherService = MinecraftLauncherService()
+    private val versionService = ModpackVersionService()
 
     var selectedMrpackFile by mutableStateOf<File?>(null)
     var minecraftPath by mutableStateOf<Path?>(null)
@@ -34,6 +36,8 @@ class ModpackInstallerViewModel {
     var installMode by mutableStateOf(InstallMode.API_DOWNLOAD)
     var apiResponse by mutableStateOf<ApiResponse?>(null)
     var isLoadingModpackInfo by mutableStateOf(false)
+    var showUpdateDialog by mutableStateOf(false)
+    var updateDialogMessage by mutableStateOf("")
 
     init {
         detectMinecraftPath()
@@ -200,6 +204,9 @@ class ModpackInstallerViewModel {
                 downloadAndInstallMods(index, mcPath)
             }
 
+            val finalIndex = modpackIndex ?: throw IllegalStateException("No modpack index available")
+            versionService.saveInstalledVersion(mcPath, info, finalIndex)
+
             statusMessage = "✅ ¡Modpack instalado correctamente!"
             installProgress = 1.0f
         }.onFailure { why ->
@@ -270,17 +277,117 @@ class ModpackInstallerViewModel {
         return FileUtils.formatFileSize(bytes)
     }
 
-    fun canInstall(): Boolean {
+    fun canClear(): Boolean {
+        return installMode == InstallMode.LOCAL_FILE &&
+               !isInstalling && 
+               (selectedMrpackFile != null || statusMessage.isNotEmpty())
+    }
+    
+    fun canPlay(): Boolean {
         return minecraftPath != null && 
                minecraftPath!!.exists() &&
-               !isInstalling && 
-               when (installMode) {
-                   InstallMode.LOCAL_FILE -> selectedMrpackFile != null && modpackInfo != null
-                   InstallMode.API_DOWNLOAD -> apiResponse?.available == true && modpackInfo != null
-               }
+               !isInstalling &&
+               modpackInfo != null &&
+               launcherService.isMinecraftLauncherInstalled()
+    }
+    
+    fun playOrUpdate() {
+        val mcPath = minecraftPath ?: return
+        val info = modpackInfo ?: return
+
+        if (installMode == InstallMode.LOCAL_FILE) {
+            updateDialogMessage = "¿Deseas instalar ${info.name} ${info.version}?\n\n" +
+                "⚠️ Se borrarán todos los mods actuales en la carpeta /mods"
+            showUpdateDialog = true
+            return
+        }
+
+        viewModelScope.launch {
+            statusMessage = "Verificando versión del modpack..."
+            
+            val index = withContext(Dispatchers.IO) {
+                // Operador `?:` = `if (foo != null) { }`
+                modpackIndex ?: runCatching {
+                    val tempMrpackFile = kotlin.io.path.createTempFile("modpack_check", ".mrpack")
+
+                    apiService.downloadModpack(tempMrpackFile) { _, _ -> }.getOrThrow()
+
+                    val result = modpackService.loadModpackInfo(tempMrpackFile.toFile())
+                    val loadedIndex = result.getOrThrow().second
+
+                    tempMrpackFile.toFile().delete()
+                    loadedIndex
+                }.onFailure { why ->
+                    println("⚠️ Error descargando modpack para verificación: ${why.message}")
+                }.getOrNull()
+            }
+
+            val comparison = withContext(Dispatchers.IO) {
+                versionService.compareVersions(mcPath, info, index)
+            }.getOrThrow()
+
+            when {
+                !comparison.isInstalled -> openConfirmDialog(info)
+                comparison.needsUpdate -> updateModpack(comparison)
+                else -> skipUpdate()
+            }
+        }
     }
 
-    fun canClear(): Boolean {
-        return !isInstalling && (selectedMrpackFile != null || apiResponse != null || statusMessage.isNotEmpty())
+    fun skipUpdate() {
+        statusMessage = "Modpack actualizado, iniciando Minecraft..."
+        launchMinecraftDirectly()
+    }
+
+    fun openConfirmDialog(info: ModpackInfo) {
+        updateDialogMessage = "El modpack no está instalado.\n\n" +
+                "¿Deseas instalar ${info.name} ${info.version}?\n\n" +
+                "⚠️ Se borrarán todos los mods actuales en la carpeta /mods"
+        showUpdateDialog = true
+    }
+
+    fun updateModpack(comparison: ModpackVersionService.VersionComparison) {
+        val message = buildString {
+            append("Se detectó una nueva versión del modpack:\n\n")
+            append("Instalada: ${comparison.installedVersion}\n")
+            append("Disponible: ${comparison.availableVersion}\n\n")
+            if (comparison.modsChanged) {
+                append("⚠️ Los mods han cambiado. Se borrarán todos los mods actuales en la carpeta /mods\n\n")
+            }
+            append("¿Deseas actualizar?")
+        }
+        updateDialogMessage = message
+        showUpdateDialog = true
+    }
+    
+    fun confirmUpdate() {
+        showUpdateDialog = false
+        viewModelScope.launch {
+            installModpack().onSuccess {
+                launchMinecraftDirectly()
+            }
+        }
+    }
+    
+    fun cancelUpdate() {
+        showUpdateDialog = false
+        statusMessage = "Actualización cancelada"
+    }
+
+    private fun launchMinecraftDirectly() {
+        val mcPath = minecraftPath ?: return
+        val info = modpackInfo ?: return
+        
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                launcherService.launchMinecraft(mcPath, info.name)
+                    .onSuccess {
+                        statusMessage = "🎮 Minecraft launcher iniciado"
+                    }
+                    .onFailure { exception ->
+                        statusMessage = "❌ Error al iniciar Minecraft: ${exception.message}"
+                    }
+            }
+        }
     }
 }

@@ -131,34 +131,37 @@ fun ProgressCard(progress: Float) {
 @Composable
 fun ActionButtons(
     onClearClick: () -> Unit,
-    onInstallClick: () -> Unit,
+    onPlayClick: () -> Unit,
+    showClearButton: Boolean,
     clearEnabled: Boolean,
-    installEnabled: Boolean
+    playEnabled: Boolean
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        OutlinedButton(
-            onClick = onClearClick,
-            enabled = clearEnabled,
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colors.primary
-            )
-        ) {
-            Text("Limpiar")
+        if (showClearButton) {
+            OutlinedButton(
+                onClick = onClearClick,
+                enabled = clearEnabled,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colors.primary
+                )
+            ) {
+                Text("Limpiar")
+            }
         }
-
+        
         Button(
-            onClick = onInstallClick,
-            enabled = installEnabled,
+            onClick = onPlayClick,
+            enabled = playEnabled,
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.primary
+                backgroundColor = Color(0xFF4CAF50)
             )
         ) {
-            Text("Instalar", color = Color.White)
+            Text("🎮 Jugar", color = Color.White)
         }
     }
 }

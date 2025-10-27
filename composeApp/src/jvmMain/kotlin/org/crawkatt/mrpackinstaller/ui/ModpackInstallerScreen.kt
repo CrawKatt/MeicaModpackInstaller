@@ -1,13 +1,14 @@
 package org.crawkatt.mrpackinstaller.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Surface
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import org.crawkatt.mrpackinstaller.data.InstallMode
 import org.crawkatt.mrpackinstaller.ui.components.*
 import org.crawkatt.mrpackinstaller.ui.theme.MrpackInstallerTheme
@@ -15,7 +16,7 @@ import org.crawkatt.mrpackinstaller.ui.theme.MrpackInstallerTheme
 @Composable
 fun ModpackInstallerScreen() {
     val viewModel = remember { ModpackInstallerViewModel() }
-    val scope = rememberCoroutineScope()
+    rememberCoroutineScope()
 
     MrpackInstallerTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -84,15 +85,59 @@ fun ModpackInstallerScreen() {
                 Spacer(Modifier.weight(1f))
                 ActionButtons(
                     onClearClick = { viewModel.clear() },
-                    onInstallClick = {
-                        scope.launch {
-                            viewModel.installModpack()
-                        }
-                    },
+                    onPlayClick = { viewModel.playOrUpdate() },
+                    showClearButton = viewModel.installMode == InstallMode.LOCAL_FILE,
                     clearEnabled = viewModel.canClear(),
-                    installEnabled = viewModel.canInstall()
+                    playEnabled = viewModel.canPlay()
+                )
+            }
+
+            if (viewModel.showUpdateDialog) {
+                UpdateDialog(
+                    message = viewModel.updateDialogMessage,
+                    onConfirm = { viewModel.confirmUpdate() },
+                    onCancel = { viewModel.cancelUpdate() }
                 )
             }
         }
     }
+}
+
+@Composable
+fun UpdateDialog(
+    message: String,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = {
+            Text(
+                text = "Actualización del Modpack",
+                style = MaterialTheme.typography.h6
+            )
+        },
+        text = {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.body1,
+                textAlign = TextAlign.Start
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = MaterialTheme.colors.primary
+                )
+            ) {
+                Text("Aceptar", color = Color.White)
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onCancel) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
