@@ -32,7 +32,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup application.properties
-        run: echo "api.base.url=${{ secrets.API_BASE_URL }}" > composeApp/src/commonMain/resources/application.properties
+        shell: bash
+        run: echo "api.base.url=${{ secrets.API_BASE_URL }}" > composeApp/src/jvmMain/resources/application.properties
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -66,7 +67,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup application.properties
-        run: echo "api.base.url=${{ secrets.API_BASE_URL }}" > composeApp/src/commonMain/resources/application.properties
+        run: echo "api.base.url=${{ secrets.API_BASE_URL }}" > composeApp/src/jvmMain/resources/application.properties
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -105,7 +106,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup application.properties
-        run: echo "api.base.url=${{ secrets.API_BASE_URL }}" > composeApp/src/commonMain/resources/application.properties
+        run: echo "api.base.url=${{ secrets.API_BASE_URL }}" > composeApp/src/jvmMain/resources/application.properties
 
       - name: Set up JDK
         uses: actions/setup-java@v4
