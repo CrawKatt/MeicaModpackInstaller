@@ -17,3 +17,7 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+/output/
+
+# Local configuration - each developer can have their own API URL
+composeApp/src/jvmMain/resources/application.properties

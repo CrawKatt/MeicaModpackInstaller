@@ -1,14 +1,18 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
+version = "1.0.0"
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    id("dev.hydraulic.conveyor") version "1.12"
 }
 
 kotlin {
     jvm()
+    jvmToolchain(17)
 
     sourceSets {
         commonMain.dependencies {
@@ -31,6 +35,11 @@ kotlin {
             implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
             implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.2")
             implementation("com.formdev:flatlaf:3.2")
+            implementation(compose.materialIconsExtended)
+        }
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
         }
     }
 }
@@ -51,7 +60,7 @@ compose.desktop {
             vendor = "CrawKatt"
 
             linux {
-                iconFile.set(project.file("src/jvmMain/resources/icon.png"))
+                iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
             }
             windows {
                 menu = true
