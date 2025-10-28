@@ -52,7 +52,7 @@ compose.desktop {
         }
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe, TargetFormat.AppImage)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "MrpackInstaller"
             packageVersion = "1.0.0"
 
@@ -60,7 +60,7 @@ compose.desktop {
             vendor = "CrawKatt"
 
             linux {
-                iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
+                iconFile.set(project.file("src/jvmMain/resources/icon.png"))
             }
             windows {
                 menu = true
