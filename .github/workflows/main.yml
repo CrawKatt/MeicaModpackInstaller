@@ -126,6 +126,9 @@ jobs:
       - name: Build .rpm
         run: ./gradlew composeApp:packageReleaseRpm
 
+      - name: List build outputs
+        run: ls -R composeApp/build/compose
+
       - name: Get Version Name
         id: get_version_name
         shell: bash
@@ -140,7 +143,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.output1 }}
           asset_path: composeApp/build/compose/binaries/main-release/deb/MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.deb
-          asset_name: MrpackInstaller-${{ github.ref_name }}.deb
+          asset_name: MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.deb
           asset_content_type: application/vnd.debian.binary-package
 
       - name: Upload Release RPM Asset
@@ -150,5 +153,5 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.output1 }}
           asset_path: composeApp/build/compose/binaries/main-release/rpm/MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.rpm
-          asset_name: MrpackInstaller-${{ github.ref_name }}.rpm
+          asset_name: MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.rpm
           asset_content_type: application/x-rpm
