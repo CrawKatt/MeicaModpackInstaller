@@ -117,8 +117,8 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
-      - name: Build AppImage
-        run: ./gradlew composeApp:packageReleaseAppImage
+      - name: Build .deb
+        run: ./gradlew composeApp:packageReleaseDeb
 
       - name: Get Version Name
         id: get_version_name
@@ -127,12 +127,12 @@ jobs:
           chmod +x ./.github/scripts/get_version_name.sh
           echo "version_name=$(./.github/scripts/get_version_name.sh versions.properties)" >> $GITHUB_OUTPUT
 
-      - name: Upload Release AppImage Asset
+      - name: Upload Release DEB Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create-release.outputs.output1 }}
-          asset_path: composeApp/build/compose/binaries/main-release/appimage/MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.AppImage
-          asset_name: MrpackInstaller-${{ github.ref_name }}.AppImage
-          asset_content_type: application/octet-stream
+          asset_path: composeApp/build/compose/binaries/main-release/deb/MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.deb
+          asset_name: MrpackInstaller-${{ github.ref_name }}.deb
+          asset_content_type: application/vnd.debian.binary-package

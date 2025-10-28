@@ -12,7 +12,17 @@ object AppConfig {
     }
     
     val apiBaseUrl: String by lazy {
-        properties.getProperty("api.base.url") 
+        val url = properties.getProperty("api.base.url") 
             ?: throw IllegalStateException("api.base.url not found in application.properties")
+        validateUrl(url)
+        url
+    }
+
+    fun validateUrl(url: String) {
+        require(url.isNotBlank()) { "URL cannot be blank" }
+        require(url.startsWith("http://") || url.startsWith("https://")) { 
+            "URL must start with http:// or https://, got: '$url'" 
+        }
+        require(!url.contains(" ")) { "URL cannot contain spaces" }
     }
 }
