@@ -136,14 +136,30 @@ jobs:
           chmod +x ./.github/scripts/get_version_name.sh
           echo "version_name=$(./.github/scripts/get_version_name.sh versions.properties)" >> $GITHUB_OUTPUT
 
+      - name: Find DEB
+        id: find_deb
+        shell: bash
+        run: |
+          file=$(find composeApp/build/compose/binaries/main-release/deb -name '*.deb' -print -quit)
+          echo "deb_file=$file" >> $GITHUB_OUTPUT
+          echo "deb_name=$(basename "$file")" >> $GITHUB_OUTPUT
+
+      - name: Find RPM
+        id: find_rpm
+        shell: bash
+        run: |
+          file=$(find composeApp/build/compose/binaries/main-release/rpm -name '*.rpm' -print -quit)
+          echo "rpm_file=$file" >> $GITHUB_OUTPUT
+          echo "rpm_name=$(basename "$file")" >> $GITHUB_OUTPUT
+
       - name: Upload Release DEB Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create-release.outputs.output1 }}
-          asset_path: composeApp/build/compose/binaries/main-release/deb/MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.deb
-          asset_name: MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.deb
+          asset_path: ${{ steps.find_deb.outputs.deb_file }}
+          asset_name: ${{ steps.find_deb.outputs.deb_name }}
           asset_content_type: application/vnd.debian.binary-package
 
       - name: Upload Release RPM Asset
@@ -152,6 +168,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create-release.outputs.output1 }}
-          asset_path: composeApp/build/compose/binaries/main-release/rpm/MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.rpm
-          asset_name: MrpackInstaller-${{ steps.get_version_name.outputs.version_name }}.rpm
+          asset_path: ${{ steps.find_rpm.outputs.rpm_file }}
+          asset_name: ${{ steps.find_rpm.outputs.rpm_name }}
           asset_content_type: application/x-rpm
