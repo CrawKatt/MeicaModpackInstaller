@@ -12,7 +12,7 @@ data class ModFile(
 data class ModpackInfo(
     val name: String,
     val version: String,
-    val summary: String,
+    val summary: String?,
     val minecraftVersion: String,
     val loader: String,
     val loaderVersion: String,
@@ -31,7 +31,7 @@ data class ApiResponse(
 
 data class ApiModpackInfo(
     @param:JsonProperty("name") val name: String,
-    @param:JsonProperty("summary") val summary: String,
+    @param:JsonProperty("summary") val summary: String?,
     @param:JsonProperty("version_id") val versionId: String,
     @param:JsonProperty("format_version") val formatVersion: Int,
     @param:JsonProperty("minecraft_version") val minecraftVersion: String,
@@ -45,21 +45,6 @@ data class ApiMod(
     @param:JsonProperty("name") val name: String,
     @param:JsonProperty("file_size") val fileSize: Long,
     @param:JsonProperty("environment") val environment: String
-)
-
-data class ApiModpack(
-    val id: String,
-    val name: String,
-    val version: String,
-    val description: String,
-    val minecraftVersion: String,
-    val loader: String,
-    val loaderVersion: String,
-    val modCount: Int,
-    val fileSize: Long,
-    val imageUrl: String? = null,
-    val author: String? = null,
-    val downloadUrl: String
 )
 
 enum class LoaderType {

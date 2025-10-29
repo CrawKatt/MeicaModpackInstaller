@@ -7,21 +7,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 object AppColors {
-    val Primary = Color(0xFF1DB954)
-    val PrimaryVariant = Color(0xFF1AA34A)
-    val Secondary = Color(0xFF03DAC6)
-    val SecondaryVariant = Color(0xFF018786)
-    val Background = Color(0xFF121212)
-    val Surface = Color(0xFF1E1E1E)
-    val Error = Color(0xFFCF6679)
+    val Primary = Color(0xFF5CB85C)
+    val PrimaryVariant = Color(0xFF4A9A4A)
+    val Secondary = Color(0xFF5BC0DE)
+    val SecondaryVariant = Color(0xFF46B8DA)
+    val Background = Color(0xFF1C1C1C)
+    val Surface = Color(0xFF2B2B2B)
+    val SurfaceVariant = Color(0xFF363636)
+    val Error = Color(0xFFD9534F)
     val OnPrimary = Color.White
-    val OnSecondary = Color.Black
-    val OnBackground = Color(0xFFE1E1E1)
-    val OnSurface = Color(0xFFE1E1E1)
-    val OnError = Color.Black
+    val OnSecondary = Color.White
+    val OnBackground = Color(0xFFE0E0E0)
+    val OnSurface = Color(0xFFE0E0E0)
+    val OnError = Color.White
     val TextFieldBackground = Color(0xFF2A2A2A)
     val TextFieldBorder = Color(0xFF3A3A3A)
-    val StatusBackground = Color(0xFF2A2A2A)
+    val MinecraftGreen = Color(0xFF5CB85C)
+    val DarkGray = Color(0xFF3C3C3C)
 }
 
 private val DarkColorPalette = darkColors(

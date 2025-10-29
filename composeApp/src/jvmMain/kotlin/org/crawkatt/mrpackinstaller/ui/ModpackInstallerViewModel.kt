@@ -273,10 +273,6 @@ class ModpackInstallerViewModel {
         installProgress = 0f
     }
 
-    fun formatFileSize(bytes: Long): String {
-        return FileUtils.formatFileSize(bytes)
-    }
-
     fun canClear(): Boolean {
         return installMode == InstallMode.LOCAL_FILE &&
                !isInstalling && 

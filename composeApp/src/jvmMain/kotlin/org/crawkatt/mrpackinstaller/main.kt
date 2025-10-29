@@ -12,8 +12,9 @@ fun main() = application {
     FlatDarkLaf.setup()
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Mrpack Installer",
-        state = WindowState(size = DpSize(1200.dp, 800.dp))
+        title = "Leafy Launcher",
+        state = WindowState(size = DpSize(1600.dp, 850.dp)),
+        resizable = false
     ) {
         ModpackInstallerScreen()
     }

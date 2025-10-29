@@ -8,9 +8,11 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.crawkatt.mrpackinstaller.data.InstallMode
+import org.crawkatt.mrpackinstaller.ui.theme.AppColors
 
 @Composable
 fun InstallModeSelector(
@@ -19,56 +21,48 @@ fun InstallModeSelector(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        elevation = 4.dp,
-        shape = RoundedCornerShape(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        Text(
+            text = "Modo de Instalación",
+            style = MaterialTheme.typography.subtitle2,
+            fontWeight = FontWeight.Bold,
+            color = AppColors.MinecraftGreen
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "Modo de Instalación",
-                style = MaterialTheme.typography.h6,
-                fontWeight = FontWeight.Bold
+            CompactModeOption(
+                selected = selectedMode == InstallMode.API_DOWNLOAD,
+                onClick = { onModeChange(InstallMode.API_DOWNLOAD) },
+                enabled = enabled,
+                title = "Servidor",
+                icon = "☁",
+                modifier = Modifier.weight(1f)
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                InstallModeOption(
-                    selected = selectedMode == InstallMode.API_DOWNLOAD,
-                    onClick = { onModeChange(InstallMode.API_DOWNLOAD) },
-                    enabled = enabled,
-                    title = "Descargar desde Servidor",
-                    description = "Conectar a la API para descargar modpacks",
-                    icon = "☁",
-                    modifier = Modifier.weight(1f)
-                )
-
-                InstallModeOption(
-                    selected = selectedMode == InstallMode.LOCAL_FILE,
-                    onClick = { onModeChange(InstallMode.LOCAL_FILE) },
-                    enabled = enabled,
-                    title = "Archivo Local",
-                    description = "Seleccionar archivo .mrpack local",
-                    icon = "📁",
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            CompactModeOption(
+                selected = selectedMode == InstallMode.LOCAL_FILE,
+                onClick = { onModeChange(InstallMode.LOCAL_FILE) },
+                enabled = enabled,
+                title = "Local",
+                icon = "📁",
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
 @Composable
-private fun InstallModeOption(
+private fun CompactModeOption(
     selected: Boolean,
     onClick: () -> Unit,
     enabled: Boolean,
     title: String,
-    description: String,
     icon: String,
     modifier: Modifier = Modifier
 ) {
@@ -78,43 +72,38 @@ private fun InstallModeOption(
                 selected = selected,
                 onClick = onClick,
                 enabled = enabled
-            ),
-        backgroundColor = if (selected) {
-            MaterialTheme.colors.primary.copy(alpha = 0.1f)
-        } else {
-            MaterialTheme.colors.surface
-        },
+            )
+            .height(70.dp),
+        backgroundColor = if (selected) AppColors.MinecraftGreen.copy(alpha = 0.2f) else AppColors.DarkGray,
         border = if (selected) {
             BorderStroke(
                 2.dp, 
-                MaterialTheme.colors.primary
+                AppColors.MinecraftGreen
             )
-        } else null,
-        elevation = if (selected) 8.dp else 2.dp,
-        shape = RoundedCornerShape(6.dp)
+        } else {
+            BorderStroke(1.dp, Color(0xFF505050))
+        },
+        elevation = if (selected) 3.dp else 1.dp,
+        shape = RoundedCornerShape(4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = icon,
-                style = MaterialTheme.typography.h4,
-                color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
+                style = MaterialTheme.typography.h5,
+                color = if (selected) AppColors.MinecraftGreen else Color(0xFFAAAAAA)
             )
 
             Text(
                 text = title,
-                style = MaterialTheme.typography.subtitle2,
-                fontWeight = FontWeight.Medium,
-                color = if (selected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-            )
-
-            Text(
-                text = description,
                 style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                fontWeight = FontWeight.Medium,
+                color = if (selected) AppColors.MinecraftGreen else Color(0xFFCCCCCC)
             )
         }
     }
