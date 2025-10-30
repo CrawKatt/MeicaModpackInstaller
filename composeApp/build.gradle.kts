@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
-    id("dev.hydraulic.conveyor") version "1.12"
 }
 
 kotlin {
@@ -72,36 +71,4 @@ compose.desktop {
             }
         }
     }
-}
-
-tasks.register<Jar>("fatJar") {
-    group = "build"
-    description = "Crea un JAR ejecutable con todas las dependencias incluidas"
-
-    archiveBaseName.set("MrpackInstaller")
-    archiveVersion.set("1.0.0")
-    archiveClassifier.set("all")
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    manifest {
-        attributes(
-            "Main-Class" to "org.crawkatt.mrpackinstaller.MainKt",
-            "Implementation-Title" to "Mrpack Installer",
-            "Implementation-Version" to "1.0.0"
-        )
-    }
-
-    from(configurations.getByName("jvmRuntimeClasspath").map {
-        if (it.isDirectory) it else zipTree(it)
-    })
-
-    from(kotlin.jvm().compilations.getByName("main").output.classesDirs)
-    from(kotlin.jvm().compilations.getByName("main").output.resourcesDir)
-}
-
-tasks.register("buildJar") {
-    group = "build"
-    description = "Alias para fatJar"
-    dependsOn("fatJar")
 }
